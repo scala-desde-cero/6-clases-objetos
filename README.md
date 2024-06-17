@@ -2,6 +2,9 @@
 1. [Intro a clases y objetos en scala](#schema1)
 2. [Herencia en Scala](#schema2)
 3. [Herencia Múltiple en Scala con Traits](#schema3)
+4. [Modificadores de Acceso: private, public, protected](#schema4)
+5. [Constructores](#schema5)
+6. [Singleton Objects](#schema6)
 
 
 <hr>
@@ -273,3 +276,265 @@ class C extends A with B {
 En este ejemplo, `C` sobrescribe el método `mensaje` y especifica que debe usar la implementación de `B`.
 ### **Resumen**
 Los traits en Scala son una herramienta poderosa para implementar herencia múltiple, permitiendo una composición flexible y reutilización de código, lo que facilita la creación de sistemas más modulares y mantenibles.
+
+
+<hr>
+
+<a name="schema4"></a>
+
+## 4. Modificadores de Acceso: private, public, protected
+
+
+### **Public**
+El modificador de acceso predeterminado en Scala es `public`. Si no especificas ningún modificador de acceso, el miembro será público y accesible desde cualquier parte del programa.
+
+```scala
+class Persona {
+  var nombre: String = "John"
+  def saludar(): Unit = {
+    println(s"Hola, mi nombre es $nombre")
+  }
+}
+```
+En este ejemplo, tanto nombre como saludar son públicos y pueden ser accedidos desde cualquier parte del programa.
+
+### **Private**
+Un miembro `private` solo es accesible dentro de la clase o el trait donde está definido. Esto es útil para encapsular detalles de implementación y proteger la integridad del estado interno de un objeto.
+
+```scala
+class Persona {
+  private var nombre: String = "John"
+  def saludar(): Unit = {
+    println(s"Hola, mi nombre es $nombre")
+  }
+  private def cambiarNombre(nuevoNombre: String): Unit = {
+    nombre = nuevoNombre
+  }
+}
+```
+En este ejemplo, `nombre` y `cambiarNombre` son privados y no pueden ser accedidos desde fuera de la clase Persona.
+
+### **Private[scope]**
+Scala permite especificar el alcance de la visibilidad privada mediante `private[scope]`, donde `scope` puede ser un paquete o una clase. Esto permite un control más fino sobre quién puede acceder a los miembros privados.
+
+```scala
+package com.ejemplo
+
+class Persona {
+  private[ejemplo] var nombre: String = "John"
+  private[ejemplo] def cambiarNombre(nuevoNombre: String): Unit = {
+    nombre = nuevoNombre
+  }
+}
+```
+En este ejemplo, `nombre` y `cambiarNombre` son accesibles dentro del paquete `com.ejemplo`.
+
+### **Protected**
+Un miembro `protected` es accesible desde la clase donde está definido y desde cualquier clase derivada (subclase). Esto es útil cuando deseas permitir el acceso a los detalles de implementación solo a través de la herencia.
+
+```scala
+class Persona {
+  protected var nombre: String = "John"
+  protected def cambiarNombre(nuevoNombre: String): Unit = {
+    nombre = nuevoNombre
+  }
+}
+
+class Empleado extends Persona {
+  def actualizarNombre(nuevoNombre: String): Unit = {
+    cambiarNombre(nuevoNombre)
+  }
+}
+```
+En este ejemplo, `nombre` y `cambiarNombre` son protegidos, por lo que `Empleado`, que es una subclase de `Persona`, puede acceder y modificar `nombre`.
+
+#### **Protected[scope]**
+
+Similar a `private[scope]`, puedes especificar el alcance de la visibilidad protegida.
+
+```scala
+package com.ejemplo
+
+class Persona {
+  protected[ejemplo] var nombre: String = "John"
+  protected[ejemplo] def cambiarNombre(nuevoNombre: String): Unit = {
+    nombre = nuevoNombre
+  }
+}
+```
+En este caso, `nombre` y `cambiarNombre` son accesibles dentro del paquete `com.ejemplo` y por cualquier clase derivada dentro del mismo paquete.
+
+### **Resumen**
+- **Public**: Miembros accesibles desde cualquier parte del programa.
+- **Private**: Miembros accesibles solo dentro de la clase o trait donde están definidos.
+- **Protected**: Miembros accesibles dentro de la clase o trait y sus subclases.
+- **Private[scope]** y **Protected[scope]**: Permiten especificar un alcance más fino para la visibilidad.
+
+
+
+<hr>
+
+<a name="schema5"></a>
+
+## 5.Constructores
+
+
+En Scala, los constructores son métodos especiales utilizados para inicializar objetos de una clase. Scala ofrece dos tipos de constructores: el constructor primario y los constructores secundarios.
+
+### **Constructor Primario**
+El constructor primario está integrado en la definición de la clase y se define junto con la declaración de la clase. Los parámetros del constructor primario se declaran directamente después del nombre de la clase y pueden tener modificadores de acceso (por ejemplo, val o var) para convertirlos en campos de la clase.
+
+
+```scala
+class Persona(val nombre: String, var edad: Int) {
+  // Código adicional del cuerpo de la clase
+  def saludar(): Unit = {
+    println(s"Hola, mi nombre es $nombre y tengo $edad años")
+  }
+}
+
+val persona = new Persona("John", 30)
+persona.saludar() // Salida: Hola, mi nombre es John y tengo 30 años
+```
+En este ejemplo, `Persona` tiene un constructor primario con dos parámetros: `nombre` y `edad`. El uso de `val` y `var` en los parámetros hace que estos sean accesibles como campos de la clase.
+
+### **Constructor Secundario**
+Los constructores secundarios se definen dentro del cuerpo de la clase usando el método `this`. Los constructores secundarios pueden llamar al constructor primario o a otros constructores secundarios.
+
+```scala
+class Persona(val nombre: String, var edad: Int) {
+  // Constructor secundario
+  def this(nombre: String) = {
+    this(nombre, 0) // Llama al constructor primario
+    println("Constructor secundario llamado")
+  }
+
+  def saludar(): Unit = {
+    println(s"Hola, mi nombre es $nombre y tengo $edad años")
+  }
+}
+
+val persona1 = new Persona("John", 30)
+val persona2 = new Persona("Jane")
+persona1.saludar() // Salida: Hola, mi nombre es John y tengo 30 años
+persona2.saludar() // Salida: Hola, mi nombre es Jane y tengo 0 años
+```
+En este ejemplo, `Persona` tiene un constructor secundario que solo toma un parámetro `nombre`. Este constructor secundario llama al constructor primario con un valor predeterminado para `edad`.
+
+### **Inicialización de Campos**
+Scala también permite la inicialización de campos dentro del cuerpo de la clase.
+
+```scala
+class Persona(val nombre: String, var edad: Int) {
+  // Inicialización de campos
+  val añoNacimiento: Int = 2024 - edad
+
+  def saludar(): Unit = {
+    println(s"Hola, mi nombre es $nombre y tengo $edad años")
+  }
+}
+
+val persona = new Persona("John", 30)
+println(persona.añoNacimiento) // Salida: 1994
+```
+### **Constructores y Herencia**
+Cuando se trabaja con herencia, los constructores de la clase base se llaman antes de los constructores de la clase derivada. La clase derivada puede llamar al constructor de la clase base usando `super`.
+
+```scala
+class Persona(val nombre: String, var edad: Int) {
+  def saludar(): Unit = {
+    println(s"Hola, mi nombre es $nombre y tengo $edad años")
+  }
+}
+
+class Empleado(nombre: String, edad: Int, val puesto: String) extends Persona(nombre, edad) {
+  def trabajar(): Unit = {
+    println(s"$nombre está trabajando como $puesto")
+  }
+}
+
+val empleado = new Empleado("John", 30, "Ingeniero")
+empleado.saludar()   // Salida: Hola, mi nombre es John y tengo 30 años
+empleado.trabajar()  // Salida: John está trabajando como Ingeniero
+```
+### **Resumen**
+- **Constructor Primario**: Definido junto con la declaración de la clase, puede tener modificadores de acceso.
+- **Constructor Secundario**: Definido dentro del cuerpo de la clase usando el método this, puede llamar a otros constructores.
+- **Inicialización de Campos**: Puede hacerse dentro del cuerpo de la clase.
+- **Constructores y Herencia**: Los constructores de la clase base se llaman antes de los de la clase derivada, y super se usa para llamar al constructor de la clase base.
+
+Los constructores en Scala proporcionan una forma flexible y poderosa de inicializar objetos, facilitando la creación y manipulación de instancias de clases de manera estructurada.
+
+
+<hr>
+
+<a name="schema6"></a>
+
+## 6. Singleton Objects
+
+
+En Scala, un objeto singleton es una forma especial de declarar una clase que solo tiene una única instancia. A diferencia de las clases normales, los objetos singleton se crean con la palabra clave `object` en lugar de `class`. Los objetos singleton son útiles para definir métodos y valores que no necesitan múltiples instancias y se utilizan frecuentemente para implementar patrones de diseño como el Singleton y el Factory.
+
+### **Características de los Objetos Singleton**
+1. **Única Instancia**: Solo existe una única instancia del objeto singleton.
+2. **Sin Constructores**: Los objetos singleton no tienen constructores explícitos como las clases.
+3. **Acceso Global**: Se puede acceder a ellos globalmente por su nombre, sin necesidad de instanciarlos.
+
+```scala
+object MiSingleton {
+  val nombre = "Singleton"
+  
+  def saludar(): Unit = {
+    println(s"Hola desde $nombre")
+  }
+}
+
+MiSingleton.saludar()  // Salida: Hola desde Singleton
+```
+En este ejemplo, `MiSingleton` es un objeto singleton con un campo `nombre` y un método `saludar`. No es necesario crear una instancia de `MiSingleton` para acceder a `saludar` o `nombre`.
+
+### **Uso de Objetos Singleton para Patrones de Diseño**
+#### Patrón Singleton
+El patrón Singleton asegura que una clase tenga solo una instancia y proporciona un punto de acceso global a ella. En Scala, esto se implementa fácilmente con un objeto singleton.
+
+```scala
+object Configuracion {
+  private var configuracion: Map[String, String] = Map()
+
+  def obtenerConfiguracion(clave: String): Option[String] = {
+    configuracion.get(clave)
+  }
+
+  def establecerConfiguracion(clave: String, valor: String): Unit = {
+    configuracion += (clave -> valor)
+  }
+}
+
+// Uso
+Configuracion.establecerConfiguracion("host", "localhost")
+println(Configuracion.obtenerConfiguracion("host"))  // Salida: Some(localhost)
+```
+### **Compañero de Clase (Companion Object)**
+En Scala, es común utilizar objetos singleton como compañeros de clase (companion objects). Un compañero de clase es un objeto que comparte el mismo nombre que una clase y puede acceder a sus miembros privados. Los compañeros de clase se utilizan para definir métodos y valores que están relacionados con la clase pero no requieren una instancia de ella.
+
+```scala
+class Persona(val nombre: String, val edad: Int)
+
+object Persona {
+  def aplicar(nombre: String, edad: Int): Persona = new Persona(nombre, edad)
+}
+
+// Uso
+val persona = Persona.aplicar("John", 30)
+println(persona.nombre)  // Salida: John
+```
+### **Resumen**
+- **Objeto Singleton**: Una clase con una única instancia, creada con object.
+- **Acceso Global**: Métodos y valores en un objeto singleton son accesibles globalmente.
+- **Patrón Singleton**: Facilita la implementación del patrón Singleton.
+- **Compañero de Clase**: Los objetos singleton pueden servir como compañeros de clase, definiendo métodos estáticos y accediendo a miembros privados.
+
+Los objetos singleton son una característica poderosa en Scala que permiten una gestión eficaz de recursos y patrones de diseño.
+
+
+
