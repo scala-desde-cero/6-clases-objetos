@@ -8,7 +8,7 @@
 7. [Companion Objects](#schema7)
 8. [Crear Instancias sin NEW](#schema8)
 9. [Case Class](#schema9)
-
+10. [Clases Abstractas](#schema10)
 <hr>
 
 <a name="schema1"></a>
@@ -794,3 +794,89 @@ println(persona1 == persona2)  // true, porque la comparación es estructural
 - Métodos Automáticos: Proporcionan métodos copy, apply, y accesores implícitos automáticamente.
 - Desestructuración: Permiten desestructuración fácil en pattern matching.
 - Uso en Pattern Matching: Se utilizan comúnmente en conjunción con el patrón match.
+
+
+<hr>
+
+<a name="schema10"></a>
+
+## 10. Clases Abstractas
+
+
+Una clase abstracta en Scala es una clase que no puede ser instanciada directamente y puede contener métodos abstractos (métodos sin implementación) y métodos concretos (métodos con implementación). Las clases abstractas se utilizan como una base para otras clases, permitiendo definir un esqueleto que otras clases pueden extender e implementar.
+
+### **Características de las Clases Abstractas**
+1. No Instanciable: No se puede crear una instancia de una clase abstracta directamente.
+2. Métodos Abstractos: Pueden contener métodos sin implementación.
+3. Métodos Concretos: Pueden contener métodos con implementación.
+4. Campos Abstractos: Pueden tener campos abstractos sin valores iniciales.
+### **Definición de una Clase Abstracta**
+```scala
+abstract class Animal {
+  def sonido(): String  // Método abstracto
+  def dormir(): Unit = println("Zzz")  // Método concreto
+}
+```
+### **Extender una Clase Abstracta**
+Para usar una clase abstracta, otra clase debe extenderla e implementar sus métodos abstractos.
+
+```scala
+class Perro extends Animal {
+  def sonido(): String = "Guau"  // Implementación del método abstracto
+}
+
+val miPerro = new Perro()
+println(miPerro.sonido())  // Output: Guau
+miPerro.dormir()           // Output: Zzz
+```
+### **Campos Abstractos**
+Las clases abstractas también pueden tener campos abstractos, que deben ser definidos por las clases que las extienden.
+
+```scala
+abstract class Persona {
+  val nombre: String  // Campo abstracto
+  def saludar(): String = s"Hola, soy $nombre"  // Método concreto usando el campo abstracto
+}
+
+class Estudiante(val nombre: String) extends Persona
+
+val estudiante = new Estudiante("Alice")
+println(estudiante.saludar())  // Output: Hola, soy Alice
+```
+### **Ventajas de las Clases Abstractas**
+1. Reutilización de Código: Permiten definir comportamientos comunes en un solo lugar, que luego pueden ser reutilizados en varias subclases.
+2. Flexibilidad: Las subclases pueden personalizar la implementación de los métodos abstractos según sus necesidades.
+3. Abstracción: Proporcionan un nivel de abstracción que permite definir un contrato que las subclases deben seguir, sin dictar exactamente cómo deben cumplir ese contrato.
+### **Comparación con Traits**
+Tanto las clases abstractas como los traits permiten definir métodos abstractos y concretos. Sin embargo, hay algunas diferencias clave:
+
+- Herencia Múltiple: Las clases en Scala pueden extender solo una clase abstracta, pero pueden implementar múltiples traits.
+- Estado: Las clases abstractas pueden tener constructores y mantener estado, mientras que los traits no pueden tener parámetros de constructor.
+### **Ejemplo Completo**
+Aquí hay un ejemplo más completo que muestra cómo se pueden usar las clases abstractas y los traits juntos:
+
+```scala
+trait Volador {
+  def volar(): String
+}
+
+abstract class Animal {
+  def sonido(): String
+  def dormir(): Unit = println("Zzz")
+}
+
+class Pajaro extends Animal with Volador {
+  def sonido(): String = "Pio"
+  def volar(): String = "Estoy volando"
+}
+
+val miPajaro = new Pajaro()
+println(miPajaro.sonido())  // Output: Pio
+println(miPajaro.volar())   // Output: Estoy volando
+miPajaro.dormir()           // Output: Zzz
+```
+### **Resumen**
+- Clases Abstractas: Proveen una plantilla para otras clases, con métodos y campos abstractos que deben ser implementados por las subclases.
+- No Instanciables: No se pueden instanciar directamente.
+- Métodos y Campos Abstractos: Pueden definir métodos y campos que no tienen implementación, dejando a las subclases la tarea de implementarlos.
+- Comparación con Traits: A diferencia de los traits, una clase solo puede extender una clase abstracta pero puede implementar múltiples traits.
