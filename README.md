@@ -5,7 +5,9 @@
 4. [Modificadores de Acceso: private, public, protected](#schema4)
 5. [Constructores](#schema5)
 6. [Singleton Objects](#schema6)
-
+7. [Companion Objects](#schema7)
+8. [Crear Instancias sin NEW](#schema8)
+9. [Case Class](#schema9)
 
 <hr>
 
@@ -537,4 +539,258 @@ println(persona.nombre)  // Salida: John
 Los objetos singleton son una característica poderosa en Scala que permiten una gestión eficaz de recursos y patrones de diseño.
 
 
+<hr>
 
+<a name="schema7"></a>
+
+
+## 7. Companion Objects
+
+
+En Scala, un "companion object" (objeto compañero) es un objeto que comparte el mismo nombre que una clase y se declara en el mismo archivo de origen. Los companion objects y sus clases compañeras pueden acceder a los miembros privados entre sí, lo que permite una fuerte relación entre los dos.
+
+### **Ventajas y Usos de los Companion Objects**
+1. **Acceso a Miembros Privados**: Los companion objects pueden acceder a los miembros privados de su clase compañera y viceversa.
+2. **Métodos Factory**: Se pueden usar para definir métodos que actúan como fábricas de instancias de la clase, proporcionando una alternativa a los constructores.
+3. **Métodos Estáticos**: Se utilizan para definir métodos que se comportan de manera similar a los métodos estáticos en otros lenguajes de programación como Java.
+### **Ejemplo de Companion Object**
+**Definición de Clase y Companion Object**
+```scala
+class Persona(val nombre: String, val edad: Int) {
+  private def mostrarPrivado(): Unit = {
+    println(s"Mi nombre es $nombre y tengo $edad años")
+  }
+}
+
+object Persona {
+  def apply(nombre: String, edad: Int): Persona = new Persona(nombre, edad)
+
+  def desdeCadena(cadena: String): Persona = {
+    val partes = cadena.split(",")
+    new Persona(partes(0), partes(1).toInt)
+  }
+}
+```
+En este ejemplo:
+
+- `Persona` es la clase.
+- `Persona` es también el companion object.
+### Uso del Companion Object
+```scala
+val persona1 = Persona("Alice", 30)  // Llama al método apply
+persona1.mostrarPrivado()            // Acceso a método privado permitido dentro de la clase
+
+val persona2 = Persona.desdeCadena("Bob,25")
+println(persona2.nombre)  // Salida: Bob
+```
+### **Acceso a Miembros Privados**
+Dado que el objeto Persona es el companion object de la clase Persona, puede acceder a los miembros privados de la clase Persona.
+
+```scala
+class CuentaBancaria(private var saldo: Double) {
+  private def mostrarSaldo(): Unit = {
+    println(s"Saldo: $saldo")
+  }
+}
+
+object CuentaBancaria {
+  def crearCuentaInicial(saldoInicial: Double): CuentaBancaria = {
+    val cuenta = new CuentaBancaria(saldoInicial)
+    cuenta.mostrarSaldo()  // Acceso permitido a miembros privados
+    cuenta
+  }
+}
+
+val cuenta = CuentaBancaria.crearCuentaInicial(1000.0)
+```
+### **Métodos Factory**
+Los companion objects se utilizan a menudo para implementar métodos factory, que proporcionan una forma conveniente de crear instancias de una clase.
+
+```scala
+class Vehiculo(val marca: String, val modelo: String)
+
+object Vehiculo {
+  def aplicar(marca: String, modelo: String): Vehiculo = new Vehiculo(marca, modelo)
+}
+
+// Crear instancia usando el método factory
+val vehiculo = Vehiculo("Toyota", "Corolla")
+println(vehiculo.marca)  // Salida: Toyota
+println(vehiculo.modelo) // Salida: Corolla
+```
+### **Resumen**
+- **Companion Object**: Un objeto que comparte el mismo nombre que una clase y se declara en el mismo archivo.
+- **Acceso Mutuo**: Los companion objects y sus clases compañeras pueden acceder a los miembros privados entre sí.
+- **Métodos Factory y Estáticos**: Se usan para definir métodos que actúan como fábricas de instancias de la clase y métodos que se comportan como métodos estáticos.
+- **Ejemplos**: Demostraron cómo crear instancias de clases usando métodos factory y cómo acceder a miembros privados.
+
+
+<hr>
+
+<a name="schema8"></a>
+
+
+## 8. Crear Instancias sin NEW
+
+En Scala, puedes crear instancias de clases sin usar la palabra clave `new` utilizando métodos especiales llamados "factory methods" que se definen generalmente en un "companion object". Estos métodos proporcionan una forma más conveniente y legible de crear instancias, y pueden encapsular lógica adicional necesaria para la creación de objetos.
+
+### **Uso de apply en Companion Objects**
+El método `apply` es un método especial en Scala que permite crear instancias de una clase sin tener que usar la palabra clave `new`. Cuando defines un método `apply` en un companion object, puedes crear instancias de la clase correspondiente llamando al objeto como si fuera una función.
+
+### **Ejemplo de apply**
+**Definición de Clase y Companion Object**
+```scala
+class Persona(val nombre: String, val edad: Int)
+
+object Persona {
+  // Método apply actúa como un método factory
+  def apply(nombre: String, edad: Int): Persona = new Persona(nombre, edad)
+}
+```
+**Crear Instancias sin new**
+```scala
+val persona1 = Persona("Alice", 30)  // Llama al método apply en el companion object
+val persona2 = Persona("Bob", 25)
+
+println(persona1.nombre)  // Salida: Alice
+println(persona2.nombre)  // Salida: Bob
+```
+### **Beneficios de Usar apply**
+1. **Simplicidad y Legibilidad**: Crear instancias sin `new` puede hacer que el código sea más legible y sencillo.
+2. **Encapsulación**: Permite encapsular la lógica de creación de objetos en el método `apply`, facilitando la gestión de la creación de instancias.
+3. **Consistencia**: Proporciona una interfaz consistente para crear instancias, lo cual es útil en bibliotecas y frameworks.
+### **Más Ejemplos y Casos de Uso**
+**Clase con Varios Constructores**
+```scala
+class Punto(val x: Int, val y: Int)
+
+object Punto {
+  def apply(x: Int, y: Int): Punto = new Punto(x, y)
+  def apply(xy: Int): Punto = new Punto(xy, xy)  // Constructor adicional
+}
+
+val punto1 = Punto(3, 4)  // Llama a apply(x, y)
+val punto2 = Punto(5)     // Llama a apply(xy)
+
+println(s"(${punto1.x}, ${punto1.y})")  // Salida: (3, 4)
+println(s"(${punto2.x}, ${punto2.y})")  // Salida: (5, 5)
+```
+### **Definición de Objetos más Complejos**
+**Clase y Companion Object con Validación**
+```scala
+class Usuario private(val nombre: String, val edad: Int)
+
+object Usuario {
+  def apply(nombre: String, edad: Int): Option[Usuario] = {
+    if (edad > 0) Some(new Usuario(nombre, edad)) else None
+  }
+}
+
+val usuario1 = Usuario("Carlos", 25)   // Some(Usuario)
+val usuario2 = Usuario("Ana", -5)      // None
+
+usuario1 match {
+  case Some(u) => println(s"Usuario válido: ${u.nombre}, ${u.edad}")
+  case None => println("Usuario inválido")
+}
+
+usuario2 match {
+  case Some(u) => println(s"Usuario válido: ${u.nombre}, ${u.edad}")
+  case None => println("Usuario inválido")
+}
+```
+### **Resumen**
+- **Companion Object**: Un objeto que comparte el mismo nombre que una clase y se declara en el mismo archivo.
+- **Método `apply`**: Un método especial que permite crear instancias de una clase sin usar `new`.
+- **Beneficios**: Simplicidad, legibilidad, encapsulación y consistencia.
+- **Ejemplos**: Demostraciones de cómo utilizar `apply` para crear instancias de clases con y sin lógica adicional.
+
+El uso de `apply` en companion objects es una práctica común en Scala que hace que la creación de instancias sea más sencilla y el código más limpio y mantenible.
+
+
+<hr>
+
+<a name="schema9"></a>
+
+## 9. Case Class
+
+Una Case Class en Scala es una clase especial que está diseñada para ser utilizada principalmente en patrones de coincidencia (pattern matching). Las case classes son una característica poderosa y ampliamente utilizada en Scala debido a las siguientes ventajas:
+
+### **Características de una Case Class**
+1. Patrones de Coincidencia: Facilitan la utilización de pattern matching.
+2. Inmutabilidad: Las instancias de case class son inmutables por defecto.
+3. Comparación Estructural: Soportan comparación estructural, es decir, dos instancias de case class son iguales si sus campos son iguales.
+4. Métodos `copy` y `apply` Automáticos: Se genera automáticamente un método `copy` para crear copias modificadas de instancias y un método `apply` para instanciarlas sin `new`.
+5. Desestructuración Automática: Se pueden desestructurar fácilmente mediante pattern matching.
+6. Accesores Implícitos: Proporcionan accesores implícitos para todos sus parámetros.
+### **Ejemplo de una Case Class**
+```scala
+case class Persona(nombre: String, edad: Int)
+```
+**Crear una Instancia**
+```scala
+val persona1 = Persona("Alice", 30)
+```
+**Comparación Estructural**
+```scala
+val persona2 = Persona("Alice", 30)
+val persona3 = Persona("Bob", 25)
+
+println(persona1 == persona2)  // true
+println(persona1 == persona3)  // false
+```
+**Desestructuración**
+```scala
+val Persona(nombre, edad) = persona1
+println(nombre)  // Alice
+println(edad)    // 30
+```
+**Método `copy`**
+```scala
+val persona4 = persona1.copy(edad = 35)
+println(persona4)  // Persona(Alice, 35)
+```
+### **Uso en Pattern Matching**
+Las case classes se utilizan comúnmente en conjunción con el patrón match para facilitar el manejo de datos estructurados.
+
+```scala
+case class Punto(x: Int, y: Int)
+
+def describirPunto(punto: Punto): String = punto match {
+  case Punto(0, 0) => "Origen"
+  case Punto(x, 0) => s"Punto en el eje X en $x"
+  case Punto(0, y) => s"Punto en el eje Y en $y"
+  case Punto(x, y) => s"Punto en ($x, $y)"
+}
+
+val punto = Punto(3, 4)
+println(describirPunto(punto))  // "Punto en (3, 4)"
+```
+### **Comparación con Clases Normales**
+Las case classes tienen varias características que facilitan su uso para manejar datos y patrones en comparación con las clases normales.
+
+**Clase Normal**
+```scala
+class Persona(val nombre: String, val edad: Int)
+
+val persona1 = new Persona("Alice", 30)
+val persona2 = new Persona("Alice", 30)
+
+println(persona1 == persona2)  // false, porque la comparación es referencial
+```
+**Case Class**
+```scala
+case class Persona(nombre: String, edad: Int)
+
+val persona1 = Persona("Alice", 30)
+val persona2 = Persona("Alice", 30)
+
+println(persona1 == persona2)  // true, porque la comparación es estructural
+```
+### **Resumen**
+- Case Classes: Clases especializadas en Scala para facilitar el manejo de datos y patrones.
+- Inmutabilidad: Son inmutables por defecto.
+- Comparación Estructural: Permiten comparación de igualdad basada en sus campos.
+- Métodos Automáticos: Proporcionan métodos copy, apply, y accesores implícitos automáticamente.
+- Desestructuración: Permiten desestructuración fácil en pattern matching.
+- Uso en Pattern Matching: Se utilizan comúnmente en conjunción con el patrón match.
